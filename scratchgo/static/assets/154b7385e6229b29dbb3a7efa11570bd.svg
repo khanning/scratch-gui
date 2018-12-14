@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="40px"
+   height="40px"
+   viewBox="0 0 40 40"
+   version="1.1"
+   id="svg2"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="scratchbit-small.svg">
+  <metadata
+     id="metadata399">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>microbit-block-icon</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1145"
+     inkscape:window-height="777"
+     id="namedview397"
+     showgrid="false"
+     inkscape:zoom="5.9"
+     inkscape:cx="20"
+     inkscape:cy="20"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+  <title
+     id="title4">microbit-block-icon</title>
+  <desc
+     id="desc6">Created with Sketch.</desc>
+  <defs
+     id="defs8">
+    <style
+       id="style4675">.cls-1{opacity:0.3;}.cls-10,.cls-2{opacity:0.1;}.cls-3{fill:#4cbf56;}.cls-4{fill:none;stroke:#0b8e69;}.cls-4,.cls-6{stroke-miterlimit:10;}.cls-5{fill:#0fbd8c;}.cls-6{fill:#fff;stroke:#e6e6e6;}.cls-7{fill:#ffab19;}.cls-8{fill:url(#linear-gradient);}.cls-9{fill:url(#linear-gradient-2);}.cls-10{fill:#231f20;}.cls-11{fill:#7c87a5;}.cls-12{fill:url(#linear-gradient-3);}.cls-13{fill:url(#linear-gradient-4);}.cls-14{fill:#e6e7e8;}</style>
+    <linearGradient
+       gradientUnits="userSpaceOnUse"
+       y2="4"
+       x2="20"
+       y1="36"
+       x1="20"
+       id="linear-gradient">
+      <stop
+         id="stop4678"
+         stop-color="#231f20"
+         offset="0" />
+      <stop
+         id="stop4680"
+         stop-opacity="0.88"
+         stop-color="#231f20"
+         offset="0.33" />
+      <stop
+         id="stop4682"
+         stop-opacity="0.51"
+         stop-color="#231f20"
+         offset="0.68" />
+      <stop
+         id="stop4684"
+         stop-opacity="0"
+         stop-color="#231f20"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linear-gradient"
+       y2="26.89"
+       x2="20"
+       y1="13.1"
+       id="linear-gradient-2" />
+    <linearGradient
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0,-1,1,0,752,3280)"
+       y2="-732"
+       x2="3263.37"
+       y1="-732"
+       x1="3256.63"
+       id="linear-gradient-3">
+      <stop
+         id="stop4688"
+         stop-color="#ffab19"
+         offset="0" />
+      <stop
+         id="stop4690"
+         stop-opacity="0"
+         stop-color="#ffab19"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       gradientUnits="userSpaceOnUse"
+       y2="25.89"
+       x2="20"
+       y1="14.1"
+       x1="20"
+       id="linear-gradient-4">
+      <stop
+         id="stop4693"
+         stop-color="#231f20"
+         offset="0" />
+      <stop
+         id="stop4695"
+         stop-opacity="0.88"
+         stop-color="#231f20"
+         offset="0.21" />
+      <stop
+         id="stop4697"
+         stop-opacity="0.51"
+         stop-color="#231f20"
+         offset="0.43" />
+      <stop
+         id="stop4699"
+         stop-opacity="0"
+         stop-color="#231f20"
+         offset="0.63" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linear-gradient"
+       id="linearGradient4784"
+       gradientUnits="userSpaceOnUse"
+       x1="20"
+       y1="36"
+       x2="20"
+       y2="4" />
+  </defs>
+  <g
+     id="Bit"
+     transform="matrix(0.78884058,0,0,0.78884058,4.2231884,4.8148188)">
+    <path
+       id="path4704"
+       d="m 25.92,3.81 0,14.62"
+       class="cls-3"
+       inkscape:connector-curvature="0"
+       style="fill:#4cbf56" />
+    <path
+       id="path4706"
+       d="m 25.92,3.81 0,14.62"
+       class="cls-4"
+       inkscape:connector-curvature="0"
+       style="fill:none;stroke:#0b8e69;stroke-miterlimit:10" />
+    <path
+       id="path4708"
+       d="m 25.92,3.81 0,14.62"
+       class="cls-5"
+       inkscape:connector-curvature="0"
+       style="fill:#0fbd8c" />
+    <circle
+       id="circle4710"
+       r="16"
+       cy="20"
+       cx="20"
+       class="cls-6"
+       style="fill:#ffffff;stroke:#e6e6e6;stroke-miterlimit:10" />
+    <circle
+       id="circle4712"
+       r="5.8899999"
+       cy="20"
+       cx="20"
+       class="cls-7"
+       style="fill:#ffab19" />
+    <g
+       id="g4714"
+       class="cls-2"
+       style="opacity:0.1">
+      <path
+         id="path4716"
+         d="M 20,5 A 15,15 0 1 1 5,20 15,15 0 0 1 20,5 M 20,4 A 16,16 0 1 0 36,20 16,16 0 0 0 20,4 Z"
+         class="cls-8"
+         inkscape:connector-curvature="0"
+         style="fill:url(#linearGradient4784)" />
+    </g>
+    <g
+       id="g4718"
+       class="cls-2"
+       style="opacity:0.1">
+      <path
+         id="path4720"
+         d="M 20,14.1 A 5.9,5.9 0 1 1 14.11,20 5.89,5.89 0 0 1 20,14.1 m 0,-1 A 6.9,6.9 0 1 0 26.89,20 6.91,6.91 0 0 0 20,13.1 Z"
+         class="cls-9"
+         inkscape:connector-curvature="0"
+         style="fill:url(#linear-gradient-2)" />
+    </g>
+    <circle
+       id="circle4722"
+       r="4.21"
+       cy="20"
+       cx="20"
+       class="cls-10"
+       style="opacity:0.1;fill:#231f20" />
+    <path
+       id="path4724"
+       d="m 19.88,6.6 a 0.16,0.16 0 0 1 0.27,0 l 0.4,0.69 0.39,0.69"
+       class="cls-11"
+       inkscape:connector-curvature="0"
+       style="fill:#7c87a5" />
+    <circle
+       id="circle4726"
+       r="3.3699999"
+       cy="20"
+       cx="20"
+       class="cls-12"
+       style="fill:url(#linear-gradient-3)" />
+    <g
+       id="g4728"
+       class="cls-2"
+       style="opacity:0.1">
+      <path
+         id="path4730"
+         d="M 20,15.1 A 4.9,4.9 0 1 1 15.11,20 4.9,4.9 0 0 1 20,15.1 m 0,-1 A 5.9,5.9 0 1 0 25.89,20 5.89,5.89 0 0 0 20,14.1 Z"
+         class="cls-13"
+         inkscape:connector-curvature="0"
+         style="fill:url(#linear-gradient-4)" />
+    </g>
+    <rect
+       id="rect4732"
+       ry="0.41999999"
+       rx="0.41999999"
+       height="0.83999997"
+       width="1.6799999"
+       y="19.16"
+       x="6.5300002"
+       class="cls-11"
+       style="fill:#7c87a5" />
+    <rect
+       id="rect4734"
+       ry="0.41999999"
+       rx="0.41999999"
+       height="0.83999997"
+       width="1.6799999"
+       y="19.16"
+       x="31.790001"
+       class="cls-11"
+       style="fill:#7c87a5" />
+    <rect
+       id="rect4736"
+       transform="matrix(0,1,-1,0,52.21,12.21)"
+       ry="0.41999999"
+       rx="0.41999999"
+       height="0.83999997"
+       width="1.6799999"
+       y="31.790001"
+       x="19.16"
+       class="cls-11"
+       style="fill:#7c87a5" />
+    <path
+       id="path4738"
+       d="M 26.74,14.06"
+       class="cls-14"
+       inkscape:connector-curvature="0"
+       style="fill:#e6e7e8" />
+    <g
+       id="g4740"
+       class="cls-2"
+       style="opacity:0.1">
+      <path
+         id="path4742"
+         d="m 20.58,2 0.72,0 a 0.48,0.48 0 0 1 0.3,0.13 0.38,0.38 0 0 0 0.31,0.14 0.45,0.45 0 0 0 0.23,-0.07 0.46,0.46 0 0 1 0.24,-0.08 l 0.09,0 0.72,0.12 a 0.45,0.45 0 0 1 0.28,0.16 0.41,0.41 0 0 0 0.34,0.17 0.4,0.4 0 0 0 0.3,-0.13 l 0,0 c 0.36,0.09 0.72,0.2 1.08,0.31 a 1.07,1.07 0 0 1 0.72,1 l 0,1.39"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>
