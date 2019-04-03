@@ -10,6 +10,7 @@ import videoInsetImage from './video-sensing-small.svg';
 import translateImage from './translate.png';
 import translateInsetImage from './translate-small.png';
 import microbitImage from './microbit.png';
+import microvmImage from './microvm.png';
 import ev3Image from './ev3.png';
 import wedoImage from './wedo.png';
 import text2speechImage from './text2speech.png';
@@ -21,6 +22,8 @@ import boostInsetImage from './boost-small.svg';
 
 import microbitPeripheralImage from './peripheral-connection/microbit/microbit-illustration.svg';
 import microbitMenuImage from './peripheral-connection/microbit/microbit-small.svg';
+import microvmPeripheralImage from './peripheral-connection/microvm/microvm-illustration.svg';
+import microvmMenuImage from './peripheral-connection/microvm/microvm-small.svg';
 import ev3PeripheralImage from './peripheral-connection/ev3/ev3-hub-illustration.svg';
 import ev3MenuImage from './peripheral-connection/ev3/ev3-small.svg';
 import wedoPeripheralImage from './peripheral-connection/wedo/wedo-illustration.svg';
@@ -173,6 +176,35 @@ export default [
                 defaultMessage="Connecting"
                 description="Message to help people connect to their micro:bit."
                 id="gui.extension.microbit.connectingMessage"
+            />
+        ),
+        helpLink: 'https://scratch.mit.edu/microbit'
+    },
+    {
+        name: 'microvm',
+        extensionId: 'microvm',
+        iconURL: microvmImage,
+        insetIconURL: microvmMenuImage,
+        description: (
+            <FormattedMessage
+                defaultMessage="Connect your projects with embedded systems."
+                description="Description for the 'microvm' extension"
+                id="gui.extension.microvm.description"
+            />
+        ),
+        featured: true,
+        disabled: false,
+        bluetoothRequired: true,
+        internetConnectionRequired: true,
+        launchPeripheralConnectionFlow: true,
+        useAutoScan: false,
+        peripheralImage: microvmPeripheralImage,
+        smallPeripheralImage: microvmMenuImage,
+        connectingMessage: (
+            <FormattedMessage
+                defaultMessage="Connecting"
+                description="Message to help people connect to their microvm."
+                id="gui.extension.microvm.connectingMessage"
             />
         ),
         helpLink: 'https://scratch.mit.edu/microbit'
