@@ -13,13 +13,32 @@ let roomId = null;
 window.dataChannel = null;
 let pingCount = 0;
 
+let x = 0, y = 0, z = 0;
+
 window.onload = (event) => {
-  document.querySelector('#join-room').addEventListener('click', joinRoom);
-    document.querySelector('#ping-button').addEventListener('click', () => {
-        if (window.dataChannel) {
-            window.dataChannel.send(new Uint8Array([pingCount++]).buffer);
+    document.querySelector('#permission').addEventListener('click', () => {
+        if (typeof(DeviceMotionEvent.requestPermission) === 'function') {
+            console.log('Request Permission');
+            DeviceMotionEvent.requestPermission()
+            .then(state => {
+                console.log(state);
+            });
         }
     });
+    console.log(document.querySelector('#accel-info'));
+    window.addEventListener('devicemotion', (e) => {
+        x = Math.round(e.accelerationIncludingGravity.x * 18);
+        y = Math.round(e.accelerationIncludingGravity.y * 18);
+        z = Math.round(e.accelerationIncludingGravity.z * 18);
+        document.querySelector('#accel-info').innerHTML = x + ', ' + y + ', ' + z;
+    });
+
+  document.querySelector('#join-room').addEventListener('click', joinRoom);
+    // document.querySelector('#ping-button').addEventListener('click', () => {
+        // if (window.dataChannel) {
+            // window.dataChannel.send(new Uint8Array([pingCount++]).buffer);
+        // }
+    // });
 
   var firebaseConfig = {
       apiKey: "AIzaSyB4YQK2vBUsBqk54k2OZA-WFipUy5PjTt4",
@@ -72,22 +91,22 @@ async function joinRoomById(roomId) {
         await peerConnection.setLocalDescription(answer);
 
         const roomWithAnswer = {
-			answer: {
-				type: answer.type,
-				sdp: answer.sdp,
-			},
+            answer: {
+                type: answer.type,
+                sdp: answer.sdp,
+            },
         };
-		await roomRef.update(roomWithAnswer);
+        await roomRef.update(roomWithAnswer);
 
-		roomRef.collection('callerCandidates').onSnapshot(snapshot => {
-		  snapshot.docChanges().forEach(async change => {
-			if (change.type === 'added') {
-			  let data = change.doc.data();
-			  console.log('Got new remote ICE candidate:', data);
-			  await peerConnection.addIceCandidate(new RTCIceCandidate(data));
-			}
-		  });
-		});
+        roomRef.collection('callerCandidates').onSnapshot(snapshot => {
+          snapshot.docChanges().forEach(async change => {
+            if (change.type === 'added') {
+              let data = change.doc.data();
+              console.log('Got new remote ICE candidate:', data);
+              await peerConnection.addIceCandidate(new RTCIceCandidate(data));
+            }
+          });
+        });
     }
 }
 
@@ -99,6 +118,15 @@ function registerPeerConnectionListeners() {
 
       peerConnection.addEventListener('connectionstatechange', () => {
           console.log(`Connection state change: ${peerConnection.connectionState}`);
+          if (peerConnection.connectionState === 'connected') {
+              window.sender = setInterval(() => {
+                if (window.dataChannel) {
+                    window.dataChannel.send(new Int16Array([x,y,z]).buffer);
+                }
+              }, 50);
+          } else if (peerConnection.connectionState === 'disconnected') {
+            clearInterval(window.sender);
+          }
         });
 
       peerConnection.addEventListener('signalingstatechange', () => {
