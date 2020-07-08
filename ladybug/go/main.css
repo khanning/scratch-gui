@@ -39,6 +39,7 @@ body {
 
 .flex-row {
   display: flex;
+  padding: 5px 0;
 }
 
 .flex-label {
@@ -51,6 +52,10 @@ body {
   width: 100px;
   flex: 4;
   padding-left: 1px;
+}
+
+.flex-input-radio {
+  text-align: left;
 }
 
 .add-input-button {

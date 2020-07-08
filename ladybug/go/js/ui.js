@@ -137,6 +137,54 @@ class ButtonModal extends InputModal {
         nameRow.appendChild(nameInput);
         this._nameInput = nameInput;
 
+        let typeRow = document.createElement('div');
+        typeRow.classList.add('flex-row');
+        this.content.append(typeRow);
+
+        let typeLabel = document.createElement('label');
+        typeLabel.classList.add('flex-label');
+        typeLabel.innerHTML = 'Type:';
+        typeRow.appendChild(typeLabel);
+
+        let div = document.createElement('div');
+        div.classList.add('flex-input', 'flex-input-radio');
+        typeRow.appendChild(div);
+
+        let item1 = document.createElement('div');
+        div.appendChild(item1);
+
+        let typeButtonInput = document.createElement('input');
+        typeButtonInput.type = 'radio';
+        typeButtonInput.value = 'button';
+        typeButtonInput.name = 'button-type';
+        // nameInput.value = this._name;
+        // typeButtonInput.classList.add('flex-input');
+        // typeRow.appendChild(typeButtonInput);
+        item1.appendChild(typeButtonInput);
+
+        let typeButtonLabel = document.createElement('label');
+        typeButtonLabel.innerHTML = 'button';
+        item1.appendChild(typeButtonLabel);
+
+        let item2 = document.createElement('div');
+        div.appendChild(item2);
+
+        let typeBroadcastInput = document.createElement('input');
+        typeBroadcastInput.type = 'radio';
+        typeBroadcastInput.value = 'broadcast';
+        typeBroadcastInput.name = 'button-type';
+        // nameInput.value = this._name;
+        // typeBroadcastInput.classList.add('flex-input');
+        // typeRow.appendChild(typeBroadcastInput);
+        item2.appendChild(typeBroadcastInput);
+
+        let typeBroadcastLabel = document.createElement('label');
+        typeBroadcastLabel.innerHTML = 'broadcast';
+        item2.appendChild(typeBroadcastLabel);
+
+        if (this._element.buttonType === 'button') typeButtonInput.checked = true;
+        else typeBroadcastInput.checked = true;
+
         // let shapeRow = document.createElement('div');
         // shapeRow.classList.add('flex-row');
         // this.content.append(shapeRow);
@@ -155,6 +203,8 @@ class ButtonModal extends InputModal {
 
     onSave() {
         this._element.name = this._nameInput.value;
+        this._element.buttonType =
+            Array.prototype.find.call(document.getElementsByName('button-type'), radio => radio.checked).value;
         this._element.setText(this._nameInput.value);
         this.close();
     }
@@ -215,6 +265,45 @@ class SliderModal extends InputModal {
 
         let title = document.createElement('h2');
         title.innerHTML = 'Edit Slider';
+        titleRow.appendChild(title);
+
+        let nameRow = document.createElement('div');
+        nameRow.classList.add('flex-row');
+        this.content.appendChild(nameRow);
+
+        let nameLabel = document.createElement('label');
+        nameLabel.classList.add('flex-label');
+        nameLabel.innerHTML = 'Name:';
+        nameRow.appendChild(nameLabel);
+
+        let nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = this._name;
+        nameInput.classList.add('flex-input');
+        nameRow.appendChild(nameInput);
+        this._nameInput = nameInput;
+    }
+
+    onSave() {
+        this._element.name = this._nameInput.value;
+        this.close();
+    }
+}
+
+class MotionModal extends InputModal {
+    constructor(element) {
+        super(element);
+        this._onSave = this.onSave;
+        this.createModal();
+    }
+
+    createModal() {
+        let titleRow = document.createElement('div');
+        titleRow.classList.add('flex-row');
+        this.content.appendChild(titleRow);
+
+        let title = document.createElement('h2');
+        title.innerHTML = 'Edit Motion';
         titleRow.appendChild(title);
 
         let nameRow = document.createElement('div');
@@ -333,6 +422,7 @@ class Button extends InputElement {
     constructor(params) {
         super(params);
         this.shape = params.shape;
+        this.buttonType = params.type;
         this._modalType = ButtonModal;
         this.create();
     }
@@ -387,6 +477,8 @@ class Button extends InputElement {
         this.touchBegin(e);
         this.isDown = true;
         if (this.editable) return;
+        this.status = true;
+        if (this.buttonType === 'button' && this.onchange) this.onchange();
         this.overlay.visible = true;
     }
 
@@ -402,6 +494,7 @@ class Button extends InputElement {
         this.isDown = false;
         this.overlay.visible = false;
         if (this.editable) return;
+        this.status = false;
         if (this.onchange) this.onchange();
     }
 
@@ -660,6 +753,112 @@ class Stage extends InputElement {
     }
 }
 
+class Motion extends InputElement {
+    constructor(params) {
+        super(params);
+        this._width = 50;
+        this._height = 50;
+        this.visible = params.visible;
+        this._x = 0;
+        this._y = 0;
+        this._z = 0;
+        this._mag = 0;
+        this.create();
+    }
+
+    create() {
+        let bg = new PIXI.Graphics();
+        bg.beginFill(0xFFFFFF);
+        bg.drawRoundedRect(this._width/-2, this._height/-2, this._height, this._width, 6);
+        bg.endFill();
+        bg.interactive = true;
+        bg.on('pointerup', e => {
+            let modal = new MotionModal(this);
+        });
+        this.addChild(bg);
+
+        this.fg = new PIXI.Graphics();
+        this.fg.beginFill(0x0000000);
+        this.fg.drawCircle(0, 0, 4);
+        this.fg.endFill();
+        this.addChild(this.fg);
+
+        let textXLabel = new PIXI.Text('X:', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        textXLabel.anchor.set(0.5);
+        textXLabel.x = -10;
+        textXLabel.y = 32;
+        this.addChild(textXLabel);
+
+        this.textX = new PIXI.Text('0', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        this.textX.anchor.set(0.5);
+        this.textX.x = 10;
+        this.textX.y = 32;
+        this.addChild(this.textX);
+
+        let textYLabel = new PIXI.Text('Y:', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        textYLabel.anchor.set(0.5);
+        textYLabel.x = -10;
+        textYLabel.y = 46;
+        this.addChild(textYLabel);
+
+        this.textY = new PIXI.Text('0', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        this.textY.anchor.set(0.5);
+        this.textY.x = 10;
+        this.textY.y = 46;
+        this.addChild(this.textY);
+
+        let textZLabel = new PIXI.Text('Z:', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        textZLabel.anchor.set(0.5);
+        textZLabel.x = -10;
+        textZLabel.y = 60;
+        this.addChild(textZLabel);
+
+        this.textZ = new PIXI.Text('0', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        this.textZ.anchor.set(0.5);
+        this.textZ.x = 10;
+        this.textZ.y = 60;
+        this.addChild(this.textZ);
+    }
+
+    setValue(x, y, z) {
+        this._x = x;
+        this._y = y;
+        this._z = z;
+        let mag = Math.cbrt(Math.pow(x,2)+Math.pow(y,2)+Math.pow(z,2));
+        this._magD = Math.round(Math.abs(mag - this._mag) * 100);
+        this._mag = mag;
+        this.update();
+    }
+
+    get motionX() {
+        return Math.round(this._x*-10);
+    }
+
+    get motionY() {
+        return Math.round(this._y*10);
+    }
+
+    get motionZ() {
+        return Math.round(this._z*10);
+    }
+
+    getVals() {
+        return [this.motionX, this.motionY, this.motionZ, this._magD];
+    }
+
+    update() {
+        this.textX.text = this.motionX;
+        this.textY.text = this.motionY;
+        this.textZ.text = this.motionZ;
+        this.fg.clear();
+        this.fg.x = this._x * -2;
+        this.fg.y = this._y * 2;
+        this.fg.beginFill(0x0000000);
+        this.fg.drawCircle(0, 0, 2+(this._z/3));
+        this.fg.endFill();
+    }
+}
+
 let UI = {
     init () {
         this.app = new PIXI.Application({
@@ -698,6 +897,7 @@ let UI = {
         } else {
             this.orientation = 'landscape';
         }
+        this.motionMonitor.x = window.innerWidth - 40;
         this.menuBar.resize();
     },
     build () {
@@ -710,8 +910,17 @@ let UI = {
         this.widgetContainer.height = window.innerHeight - 100;
         this.app.stage.addChild(this.widgetContainer);
 
+        this.motionMonitor = new Motion({
+            name: 'test',
+            x: window.innerWidth - 40,
+            y: 10,
+            draggable: false,
+            visible: false
+        });
+        this.widgetContainer.addChild(this.motionMonitor);
+
         let slider = new Slider({
-            name: '1',
+            name: 'size',
             width: 60,
             height: 200,
             x: 80,
@@ -723,7 +932,7 @@ let UI = {
         this.widgetContainer.addChild(slider);
 
         let touchPad = new TouchPad({
-            name: '1',
+            name: 'finger',
             width: 200,
             height: 200*.75,
             x: 250,
@@ -736,6 +945,7 @@ let UI = {
         let button = new Button({
             name: 'go',
             shape: 'circle',
+            type: 'button',
             height: 80,
             width: 80,
             // x: window.innerWidth/2,
@@ -744,7 +954,7 @@ let UI = {
             draggable: true
             // y: window.innerHeight/2
         });
-        button.onchange = () => this.emit({type: 'broadcast', inputType: 'button', name: button.name});
+        button.onchange = () => this.emit({type: 'sensor', inputType: button.buttonType, name: button.name, val: button.status});
         this.widgetContainer.addChild(button);
 
         // this.stage = new Stage({
@@ -916,6 +1126,7 @@ let UI = {
             let button = new Button({
                 name: '',
                 shape: 'circle',
+                type: 'button',
                 height: 80,
                 width: 80,
                 // x: window.innerWidth/2,
@@ -926,7 +1137,7 @@ let UI = {
             });
             button.setEditable(true);
             button.edit();
-            button.onchange = () => this.emit({type: 'broadcast', inputType: 'button', name: button.name});
+            button.onchange = () => this.emit({type: 'sensor', inputType: button.buttonType, name: button.name});
             this.widgetContainer.addChild(button);
         } else if (type === 'slider') {
             let slider = new Slider({
@@ -990,6 +1201,19 @@ let UI = {
         // if (this.test) return;
         // this.test = true;
         // this.stage.updateTexture(texture);
+    },
+    activateMotion() {
+        this.motionMonitor.visible = true;
+    },
+    updateMotion(x, y, z) {
+        if (!this.deviceHasMotion) {
+            this.motionMonitor.visible = true;
+            this.deviceHasMotion = true;
+            this.motionInterval = setInterval(() => {
+                this.emit({type: 'sensor', inputType: 'motion', name: this.motionMonitor.name, val: this.motionMonitor.getVals()});
+            }, 20);
+        }
+        this.motionMonitor.setValue(x, y, z);
     },
     emit (event) {
         this.listeners.forEach(c => c(event));
