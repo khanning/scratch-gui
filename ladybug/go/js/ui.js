@@ -770,10 +770,31 @@ class Motion extends InputElement {
         let bg = new PIXI.Graphics();
         bg.beginFill(0xFFFFFF);
         bg.drawRoundedRect(this._width/-2, this._height/-2, this._height, this._width, 6);
+        bg.beginFill(0xe67e22);
+        bg.drawRect(-1, this._height/-2, 2, this._height);
+        bg.beginFill(0x9b59b6);
+        bg.drawRect(this._width/-2, -1, this._width, 2);
         bg.endFill();
         bg.interactive = true;
         bg.on('pointerup', e => {
-            let modal = new MotionModal(this);
+            if (!UI.deviceHasMotion) {
+                console.log('has motion');
+                DeviceOrientationEvent.requestPermission()
+                .then(state => {
+                    console.log(state);
+                    if (state === 'granted') {
+                        window.addEventListener('devicemotion', (e) => {
+                            UI.updateMotion(
+                                e.accelerationIncludingGravity.x,
+                                e.accelerationIncludingGravity.y,
+                                e.accelerationIncludingGravity.z
+                            );
+                        });
+                    }
+                });
+            } else {
+                let modal = new MotionModal(this);
+            }
         });
         this.addChild(bg);
 
@@ -781,42 +802,43 @@ class Motion extends InputElement {
         this.fg.beginFill(0x0000000);
         this.fg.drawCircle(0, 0, 4);
         this.fg.endFill();
+        this.fg.alpha = 0.7;
         this.addChild(this.fg);
 
-        let textXLabel = new PIXI.Text('X:', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        let textXLabel = new PIXI.Text('X', {fontFamily: 'Arial', fontSize: 12, fill: '0x8e44ad'});
         textXLabel.anchor.set(0.5);
-        textXLabel.x = -10;
-        textXLabel.y = 32;
+        textXLabel.x = -34;
+        textXLabel.y = -5;
         this.addChild(textXLabel);
 
-        this.textX = new PIXI.Text('0', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        this.textX = new PIXI.Text('0', {fontFamily: 'Arial', fontSize: 12, fill: '0x8e44ad'});
         this.textX.anchor.set(0.5);
-        this.textX.x = 10;
-        this.textX.y = 32;
+        this.textX.x = -34;
+        this.textX.y = 5;
         this.addChild(this.textX);
 
-        let textYLabel = new PIXI.Text('Y:', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        let textYLabel = new PIXI.Text('Y', {fontFamily: 'Arial', fontSize: 12, fill: '0xd35400'});
         textYLabel.anchor.set(0.5);
-        textYLabel.x = -10;
-        textYLabel.y = 46;
+        textYLabel.x = -7;
+        textYLabel.y = -32;
         this.addChild(textYLabel);
 
-        this.textY = new PIXI.Text('0', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        this.textY = new PIXI.Text('0', {fontFamily: 'Arial', fontSize: 12, fill: '0xd35400'});
         this.textY.anchor.set(0.5);
-        this.textY.x = 10;
-        this.textY.y = 46;
+        this.textY.x = 7;
+        this.textY.y = -32;
         this.addChild(this.textY);
 
-        let textZLabel = new PIXI.Text('Z:', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
+        let textZLabel = new PIXI.Text('Z', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
         textZLabel.anchor.set(0.5);
-        textZLabel.x = -10;
-        textZLabel.y = 60;
+        textZLabel.x = 32;
+        textZLabel.y = 20;
         this.addChild(textZLabel);
 
         this.textZ = new PIXI.Text('0', {fontFamily: 'Arial', fontSize: 12, fill: '0x000000'});
         this.textZ.anchor.set(0.5);
-        this.textZ.x = 10;
-        this.textZ.y = 60;
+        this.textZ.x = 28;
+        this.textZ.y = 32;
         this.addChild(this.textZ);
     }
 
@@ -854,7 +876,7 @@ class Motion extends InputElement {
         this.fg.x = this._x * -2;
         this.fg.y = this._y * 2;
         this.fg.beginFill(0x0000000);
-        this.fg.drawCircle(0, 0, 2+(this._z/3));
+        this.fg.drawCircle(0, 0, 2+(Math.abs(this._z)/3));
         this.fg.endFill();
     }
 }
@@ -897,7 +919,7 @@ let UI = {
         } else {
             this.orientation = 'landscape';
         }
-        this.motionMonitor.x = window.innerWidth - 40;
+        this.motionMonitor.x = window.innerWidth - 42;
         this.menuBar.resize();
     },
     build () {
@@ -912,7 +934,7 @@ let UI = {
 
         this.motionMonitor = new Motion({
             name: 'test',
-            x: window.innerWidth - 40,
+            x: window.innerWidth - 42,
             y: 10,
             draggable: false,
             visible: false
@@ -1076,7 +1098,7 @@ let UI = {
         };
         editTools.addChild(addButton);
 
-        let input = new PIXI.TextInput({
+        this.rtcInput = new PIXI.TextInput({
             input: {
                 fontSize: '1.6em',
                 padding: '12px',
@@ -1089,24 +1111,24 @@ let UI = {
                 disabled: {fill: 0xDBDBDB, rounded: 12}
             }
         });
-        input.placeholder = '0000';
-        input.maxLength = 4;
-        input.restrict = '0123456789';
-        input.x = input.width/2 + 10;
-        input.y = input.height/2 + 7.5;
-        input.pivot.x = input.width/2;
-        input.pivot.y = input.height/2;
-        menu.addChild(input);
+        this.rtcInput.placeholder = '0000';
+        this.rtcInput.maxLength = 4;
+        this.rtcInput.restrict = '0123456789';
+        this.rtcInput.x = this.rtcInput.width/2 + 10;
+        this.rtcInput.y = this.rtcInput.height/2 + 7.5;
+        this.rtcInput.pivot.x = this.rtcInput.width/2;
+        this.rtcInput.pivot.y = this.rtcInput.height/2;
+        menu.addChild(this.rtcInput);
 
         let connectButton = new ImageButton({
-            x: input.width + 40,
+            x: this.rtcInput.width + 40,
             y: menuBg.height/2,
             width: menuBg.height-20,
             height: menuBg.height-20,
             imgSrc: 'assets/connect.png'
         });
         connectButton.setTint(0xf39c12);
-        connectButton.onchange = e => this.emit({type: 'command', name: 'connect', value: input.text});
+        connectButton.onchange = e => this.emit({type: 'command', name: 'connect', value: this.rtcInput.text});
         menu.addChild(connectButton);
 
         menu.resize = () => {
@@ -1137,7 +1159,7 @@ let UI = {
             });
             button.setEditable(true);
             button.edit();
-            button.onchange = () => this.emit({type: 'sensor', inputType: button.buttonType, name: button.name});
+            button.onchange = () => this.emit({type: 'sensor', inputType: button.buttonType, name: button.name, val: button.status});
             this.widgetContainer.addChild(button);
         } else if (type === 'slider') {
             let slider = new Slider({
@@ -1182,6 +1204,7 @@ let UI = {
     setConnected(isConnected) {
         if (isConnected) {
             this.connectButton.setTint(0x2ecc71);
+            this.rtcInput.text = '';
         } else {
             this.connectButton.setTint(0xf39c12);
         }
@@ -1203,6 +1226,9 @@ let UI = {
         // this.stage.updateTexture(texture);
     },
     activateMotion() {
+        this.motionMonitor.visible = true;
+    },
+    motionNeedsPermission() {
         this.motionMonitor.visible = true;
     },
     updateMotion(x, y, z) {
