@@ -26,6 +26,7 @@ let pingCount = 0;
 let x = 0, y = 0, z = 0;
 
 let RTCClient = {
+    connectionListeners: [],
     listeners: [],
     broadcast(text) {
         var broadcastBuffer = new TextEncoder().encode(text);
@@ -55,9 +56,11 @@ let RTCClient = {
     },
     send(data) {
         if (this.dataChannel && this.dataChannel.readyState === 'open') {
-            console.log('sending');
             this.dataChannel.send(data.buffer);
         }
+    },
+    addConnectionListener(callback) {
+        this.connectionListeners.push(callback);
     },
     addListener(callback) {
         this.listeners.push(callback);
@@ -83,15 +86,15 @@ let RTCClient = {
             const calleeCandidatesCollection = roomRef.collection('calleeCandidates');
             peerConnection.addEventListener('icecandidate', event => {
                 if (!event.candidate) {
-                    console.log('Got final candidate!');
+                    // console.log('Got final candidate!');
                     return;
                 }
-                console.log('Got candidate: ', event.candidate);
+                // console.log('Got candidate: ', event.candidate);
                 calleeCandidatesCollection.add(event.candidate.toJSON());
             });
 
             const offer = roomSnapshot.data().offer;
-            console.log('Got offer', offer);
+            // console.log('Got offer', offer);
             await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
@@ -108,7 +111,7 @@ let RTCClient = {
               snapshot.docChanges().forEach(async change => {
                 if (change.type === 'added') {
                   let data = change.doc.data();
-                  console.log('Got new remote ICE candidate:', data);
+                  // console.log('Got new remote ICE candidate:', data);
                   await peerConnection.addIceCandidate(new RTCIceCandidate(data));
                 }
               });
@@ -116,26 +119,17 @@ let RTCClient = {
         }
     },
     registerPeerConnectionListeners() {
-        peerConnection.addEventListener('icegatheringstatechange', () => {
-            console.log(`ICE gathering state changed: ${peerConnection.iceGatheringState}`);
-        });
+        // peerConnection.addEventListener('icegatheringstatechange', () => {
+            // console.log(`ICE gathering state changed: ${peerConnection.iceGatheringState}`);
+        // });
         peerConnection.addEventListener('connectionstatechange', () => {
-            console.log(`Connection state change: ${peerConnection.connectionState}`);
-            // if (peerConnection.connectionState === 'connected') {
-                // window.sender = setInterval(() => {
-                    // if (window.dataChannel) {
-                        // window.dataChannel.send(new Int16Array([MSG_TYPES.sensors,x,y,z]).buffer);
-                    // }
-                // }, 50);
-            // } else if (peerConnection.connectionState === 'disconnected') {
-                // clearInterval(window.sender);
-            // }
+            this.connectionListeners.forEach(l => l(peerConnection.connectionState));
         });
-        peerConnection.addEventListener('signalingstatechange', () => {
-            console.log(`Signaling state change: ${peerConnection.signalingState}`);
-        });
-        peerConnection.addEventListener('iceconnectionstatechange ', () => {
-            console.log(`ICE connection state change: ${peerConnection.iceConnectionState}`);
-        });
+        // peerConnection.addEventListener('signalingstatechange', () => {
+            // console.log(`Signaling state change: ${peerConnection.signalingState}`);
+        // });
+        // peerConnection.addEventListener('iceconnectionstatechange ', () => {
+            // console.log(`ICE connection state change: ${peerConnection.iceConnectionState}`);
+        // });
     }
 };

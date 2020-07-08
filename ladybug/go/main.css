@@ -1,4 +1,64 @@
 body {
   margin: 0;
   overflow: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.shadow {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.3);
+  position: fixed;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-container {
+  padding: 20px 40px 0 40px;
+  width: 60%;
+  max-width: 400px;
+  padding-bottom: 20px;
+  background-color: white;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.content {
+  padding: 0 40px;
+  padding-bottom: 20px;
+  background-color: white;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.content h2 {
+  flex: 1;
+}
+
+.flex-row {
+  display: flex;
+}
+
+.flex-label {
+  text-align: right;
+  padding-right: 10px;
+  flex: 3;
+}
+
+.flex-input {
+  width: 100px;
+  flex: 4;
+  padding-left: 1px;
+}
+
+.add-input-button {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.add-input-button:hover {
+  background-color: #ebebeb;
 }
