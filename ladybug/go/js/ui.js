@@ -14,6 +14,12 @@ class Modal {
         contentContainer.addEventListener('pointerdown', (e) => e.stopPropagation());
         this.modalBox.appendChild(contentContainer);
 
+        let closeButton = document.createElement('div');
+        closeButton.classList.add('close-button');
+        closeButton.innerHTML = 'x';
+        closeButton.addEventListener('pointerup', this.close.bind(this));
+        contentContainer.appendChild(closeButton);
+
         this.content = document.createElement('div');
         this.content.classList.add('content');
         contentContainer.appendChild(this.content);
@@ -88,6 +94,97 @@ class AddModal extends Modal {
     }
 }
 
+class ConnectModal extends Modal {
+    constructor(callback) {
+        super();
+        this._callback = callback;
+        this._pin = [];
+        this.createModal();
+    }
+
+    createModal() {
+        this.content.setAttribute('tabindex', '0');
+        this.content.addEventListener('keydown', this.keypress.bind(this));
+        this.content.focus();
+
+        let titleRow = document.createElement('div');
+        titleRow.classList.add('flex-row', 'pin-display');
+        this.content.appendChild(titleRow);
+
+        this.display = document.createElement('div');
+        this.display.classList.add('empty');
+        this.display.innerHTML = '0000';
+        titleRow.appendChild(this.display);
+
+        this.content.appendChild(this.createRow([1, 2, 3]));
+        this.content.appendChild(this.createRow([4, 5, 6]));
+        this.content.appendChild(this.createRow([7, 8, 9]));
+        this.content.appendChild(this.createRow(['<', 0, 'ok']));
+
+        // buttonRow1.appendChild(button1);
+    }
+
+    createRow(btns) {
+        let row = document.createElement('div');
+        row.classList.add('flex-row');
+        btns.forEach(b => {
+            row.appendChild(this.createButton(b));
+        });
+        return row;
+    }
+
+    createButton(val) {
+        let button = document.createElement('div');
+        button.classList.add('pin-button');
+        button.innerHTML = val;
+        button.addEventListener('pointerup', e => {
+            this.evalInput(val);
+        });
+        return button;
+    }
+
+    evalInput(val) {
+        if ('0123456789'.indexOf(val) >= 0) {
+            this.typeNum(val);
+        } else if (val === '<' || val === 'Backspace') {
+            this.delete();
+        } else if (val === 'ok' || val === 'Enter') {
+            this.submit();
+        }
+    }
+
+    keypress(e) {
+        this.evalInput(e.key);
+    }
+
+    typeNum(val) {
+        if (this._pin.length === 0) this.display.classList.remove('empty');
+        if (this._pin.length < 4) this._pin.push(val);
+        this.updateDisplay();
+    }
+
+    delete() {
+        if (this._pin.length === 0) return;
+        this._pin.pop();
+        if (this._pin.length === 0) {
+            this.display.innerHTML = '0000';
+            this.display.classList.add('empty');
+            return;
+        }
+        this.updateDisplay();
+    }
+
+    submit() {
+        if (this._pin.length !== 4) return;
+        this._callback(this._pin.join(''));
+        this.close();
+    }
+
+    updateDisplay() {
+        this.display.innerHTML = this._pin.join('');
+    }
+}
+
 class InputModal extends Modal {
     constructor(element) {
         super();
@@ -136,6 +233,22 @@ class ButtonModal extends InputModal {
         nameInput.classList.add('flex-input');
         nameRow.appendChild(nameInput);
         this._nameInput = nameInput;
+
+        let colorRow = document.createElement('div');
+        colorRow.classList.add('flex-row');
+        this.content.appendChild(colorRow);
+
+        let colorLabel = document.createElement('label');
+        colorLabel.classList.add('flex-label');
+        colorLabel.innerHTML = 'Color:';
+        colorRow.appendChild(colorLabel);
+
+        let colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = '#' + this._element.color.toString(16);
+        colorInput.classList.add('flex-input');
+        colorRow.appendChild(colorInput);
+        this._colorInput = colorInput;
 
         let typeRow = document.createElement('div');
         typeRow.classList.add('flex-row');
@@ -203,6 +316,8 @@ class ButtonModal extends InputModal {
 
     onSave() {
         this._element.name = this._nameInput.value;
+        this._element.color = this._colorInput.value.substring(1);
+        this._element.bg.tint = parseInt(this._element.color, 16);
         this._element.buttonType =
             Array.prototype.find.call(document.getElementsByName('button-type'), radio => radio.checked).value;
         this._element.setText(this._nameInput.value);
@@ -282,6 +397,74 @@ class SliderModal extends InputModal {
         nameInput.classList.add('flex-input');
         nameRow.appendChild(nameInput);
         this._nameInput = nameInput;
+
+        let rangeRow = document.createElement('div');
+        rangeRow.classList.add('flex-row');
+        this.content.appendChild(rangeRow);
+
+        let rangeLabel = document.createElement('label');
+        rangeLabel.classList.add('flex-label');
+        rangeLabel.innerHTML = 'Range:';
+        rangeRow.appendChild(rangeLabel);
+
+        let minInput = document.createElement('input');
+        minInput.type = 'text';
+        minInput.value = this._element.min;
+        minInput.classList.add('flex-input', 'range-input');
+        rangeRow.appendChild(minInput);
+        this._minInput = minInput;
+
+        let toLabel = document.createElement('label');
+        toLabel.innerHTML = '-';
+        rangeRow.appendChild(toLabel);
+
+        let maxInput = document.createElement('input');
+        maxInput.type = 'text';
+        maxInput.value = this._element.max;
+        maxInput.classList.add('flex-input', 'range-input');
+        rangeRow.appendChild(maxInput);
+        this._maxInput = maxInput;
+    }
+
+    onSave() {
+        this._element.name = this._nameInput.value;
+        this._element.min = parseInt(this._minInput.value);
+        this._element.max = parseInt(this._maxInput.value);
+        this.close();
+    }
+}
+
+class KnobModal extends InputModal {
+    constructor(element) {
+        super(element);
+        this._onSave = this.onSave;
+        this.createModal();
+    }
+
+    createModal() {
+        let titleRow = document.createElement('div');
+        titleRow.classList.add('flex-row');
+        this.content.appendChild(titleRow);
+
+        let title = document.createElement('h2');
+        title.innerHTML = 'Edit Knob';
+        titleRow.appendChild(title);
+
+        let nameRow = document.createElement('div');
+        nameRow.classList.add('flex-row');
+        this.content.appendChild(nameRow);
+
+        let nameLabel = document.createElement('label');
+        nameLabel.classList.add('flex-label');
+        nameLabel.innerHTML = 'Name:';
+        nameRow.appendChild(nameLabel);
+
+        let nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = this._name;
+        nameInput.classList.add('flex-input');
+        nameRow.appendChild(nameInput);
+        this._nameInput = nameInput;
     }
 
     onSave() {
@@ -321,10 +504,44 @@ class MotionModal extends InputModal {
         nameInput.classList.add('flex-input');
         nameRow.appendChild(nameInput);
         this._nameInput = nameInput;
+
+        let flipXRow = document.createElement('div');
+        flipXRow.classList.add('flex-row');
+        this.content.appendChild(flipXRow);
+
+        let flipXLabel = document.createElement('label');
+        flipXLabel.classList.add('flex-label');
+        flipXLabel.innerHTML = 'Flip X:';
+        flipXRow.appendChild(flipXLabel);
+
+        let flipXInput = document.createElement('input');
+        flipXInput.type = 'checkbox';
+        flipXInput.checked = this._element.flipX;
+        flipXInput.classList.add('flex-input');
+        flipXRow.appendChild(flipXInput);
+        this._flipXInput = flipXInput;
+
+        let flipYRow = document.createElement('div');
+        flipYRow.classList.add('flex-row');
+        this.content.appendChild(flipYRow);
+
+        let flipYLabel = document.createElement('label');
+        flipYLabel.classList.add('flex-label');
+        flipYLabel.innerHTML = 'Flip Y:';
+        flipYRow.appendChild(flipYLabel);
+
+        let flipYInput = document.createElement('input');
+        flipYInput.type = 'checkbox';
+        flipYInput.checked = this._element.flipY;
+        flipYInput.classList.add('flex-input');
+        flipYRow.appendChild(flipYInput);
+        this._flipYInput = flipYInput;
     }
 
     onSave() {
         this._element.name = this._nameInput.value;
+        this._element.flipX = this._flipXInput.checked;
+        this._element.flipY = this._flipYInput.checked;
         this.close();
     }
 }
@@ -335,11 +552,14 @@ class InputElement extends PIXI.Container {
         this.name = params.name;
         this._width = params.width;
         this._height = params.height;
+        this._scale = 1;
         this.x = params.x;
         this.y = params.y;
         this.params = params;
         this.editable = false;
         this.draggable = (this.params.draggable) ? true : false;
+        this.mainContainer = new PIXI.Container();
+        this.addChild(this.mainContainer);
         this.createMenu();
     }
 
@@ -348,27 +568,63 @@ class InputElement extends PIXI.Container {
         this.menu.visible = false;
         this.addChild(this.menu);
 
-        let closeButton = new PIXI.Sprite.from('assets/close.png');
-        closeButton.tint = 0xe74c3c;
-        closeButton.width = 25;
-        closeButton.height = 25;
-        closeButton.x = this._width/2;
-        closeButton.y = this._height/-2-30;
-        closeButton.buttonMode = true;
-        closeButton.interactive = true;
-        closeButton.on('pointerup', this.close, this);
-        this.menu.addChild(closeButton);
+        this.closeButton = new PIXI.Sprite.from('assets/close.png');
+        this.closeButton.tint = 0xe74c3c;
+        this.closeButton.width = 25;
+        this.closeButton.height = 25;
+        this.closeButton.x = this._width/2;
+        this.closeButton.y = this._height/-2-30;
+        this.closeButton.buttonMode = true;
+        this.closeButton.interactive = true;
+        this.closeButton.on('pointerup', this.close, this);
+        this.menu.addChild(this.closeButton);
 
-        let editButton = new PIXI.Sprite.from('assets/info.png');
-        editButton.tint = 0xfafafa;
-        editButton.width = 25;
-        editButton.height = 25;
-        editButton.x = this._width/2-30;
-        editButton.y = this._height/-2-30;
-        editButton.buttonMode = true;
-        editButton.interactive = true;
-        editButton.on('pointerup', this.edit, this);
-        this.menu.addChild(editButton);
+        this.editButton = new PIXI.Sprite.from('assets/info.png');
+        this.editButton.tint = 0xfafafa;
+        this.editButton.width = 25;
+        this.editButton.height = 25;
+        this.editButton.x = this._width/2-30;
+        this.editButton.y = this._height/-2-30;
+        this.editButton.buttonMode = true;
+        this.editButton.interactive = true;
+        this.editButton.on('pointerup', this.edit, this);
+        this.menu.addChild(this.editButton);
+
+        this.boundingBox = new PIXI.Graphics();
+        this.boundingBox.lineStyle(2, 0x3b3b3b, 1);
+        this.boundingBox.drawRoundedRect(
+            this._width/-2, this._height/-2,
+            this._width, this._height, 2);
+        this.boundingBox.endFill();
+        this.menu.addChild(this.boundingBox);
+
+        this.rotateButton = new PIXI.Sprite.from('assets/rotate.png');
+        this.rotateButton.tint = 0xfafafa;
+        this.rotateButton.width = 25;
+        this.rotateButton.height = 25;
+        this.rotateButton.x = this._width/-2-25;
+        this.rotateButton.y = this._height/2;
+        this.rotateButton.buttonMode = true;
+        this.rotateButton.interactive = true;
+        this.rotateButton.on('pointerdown', this.rotate, this);
+        this.rotateButton.on('pointerup', this.touchEnd, this);
+        this.rotateButton.on('pointerupoutside', this.touchEnd, this);
+        this.rotateButton.on('pointermove', this.onRotate, this);
+        this.menu.addChild(this.rotateButton);
+
+        this.resizeButton = new PIXI.Sprite.from('assets/scale.png');
+        this.resizeButton.tint = 0xfafafa;
+        this.resizeButton.width = 25;
+        this.resizeButton.height = 25;
+        this.resizeButton.x = this._width/2;
+        this.resizeButton.y = this._height/2;
+        this.resizeButton.buttonMode = true;
+        this.resizeButton.interactive = true;
+        this.resizeButton.on('pointerdown', this.resize, this);
+        this.resizeButton.on('pointerup', this.touchEnd, this);
+        this.resizeButton.on('pointerupoutside', this.touchEnd, this);
+        this.resizeButton.on('pointermove', this.onResize, this);
+        this.menu.addChild(this.resizeButton);
     }
 
     setEditable(isEditable) {
@@ -388,18 +644,62 @@ class InputElement extends PIXI.Container {
 
     touchBegin(e) {
         if (!this.draggable) return;
+        if (this.editable) this.zIndex = 100;
         this._touchStartX = e.data.getLocalPosition(this).x;
         this._touchStartY = e.data.getLocalPosition(this).y;
         // this._longpressTimeout = setTimeout(this.longpressEvent.bind(this), 2000);
     }
 
+    rotate(e) {
+        // this.touchBegin(e);
+        const pos = e.data.getLocalPosition(this);
+        this._touchStartAngle = Math.atan2(pos.y, pos.x) * (180/Math.PI);
+        this.rotating = true;
+    }
+
+    resize(e) {
+        const pos = e.data.getLocalPosition(this);
+        this._touchStartDist = Math.sqrt(Math.pow(pos.x,2) + Math.pow(pos.y,2));
+        this.resizing = true;
+    }
+
+    onResize(e) {
+        if (!this.resizing) return;
+        this.closeButton.x = this.mainContainer.width/2;
+        this.closeButton.y = this.mainContainer.height/-2-30;
+        this.editButton.x = this.mainContainer.width/2-30;
+        this.editButton.y = this.mainContainer.height/-2-30;
+        this.rotateButton.x = this.mainContainer.width/-2-25;
+        this.rotateButton.y = this.mainContainer.height/2;
+        this.resizeButton.x = this.mainContainer.width/2;
+        this.resizeButton.y = this.mainContainer.height/2;
+        this.boundingBox.clear();
+        this.boundingBox.lineStyle(2, 0x3b3b3b, 1);
+        this.boundingBox.drawRoundedRect(
+            this.mainContainer.width/-2, this.mainContainer.height/-2,
+            this.mainContainer.width, this.mainContainer.height, 2);
+        this.boundingBox.endFill();
+    }
+
     touchEnd() {
+        this.rotating = false;
+        this.resizing = false;
+        this.zIndex = 0;
         if (this._longpressTimeout) clearTimeout(this._longpressTimeout);
         if (this.editable) return;
         if (this.callback) this.callback();
     }
 
+    onRotate(e) {
+        if (!this.rotating) return;
+        const x = e.data.global.x - this.x;
+        const y = e.data.global.y - this.y - 100;
+        let rads = Math.atan2(y, x) * (180/Math.PI);
+        this.angle = rads - this._touchStartAngle;
+    }
+
     onMoveEvent(e) {
+        // console.log(e);
         // if (this._longpressTimeout) clearTimeout(this._longpressTimeout);
         // this._longpressTimeout = setTimeout(this.longpressEvent.bind(this), 2000);
     }
@@ -415,6 +715,9 @@ class InputElement extends PIXI.Container {
 
     close() {
         this.destroy();
+        if (this instanceof Stage) {
+            UI.checkStageListeners();
+        }
     }
 }
 
@@ -422,52 +725,72 @@ class Button extends InputElement {
     constructor(params) {
         super(params);
         this.shape = params.shape;
+        this.color = params.color;
         this.buttonType = params.type;
         this._modalType = ButtonModal;
         this.create();
     }
 
     create() {
-        this.graphics = new PIXI.Graphics();
-        this.overlay = new PIXI.Graphics();
-        this.overlay.alpha = 0.2;
-        this.overlay.visible = false;
+        // this.graphics = new PIXI.Graphics();
+        // this.overlay = new PIXI.Graphics();
+        // this.overlay.alpha = 0.2;
+        // this.overlay.visible = false;
 
-        if (this.shape === 'square') {
-            this.graphics.lineStyle(2, 0xFF00FF, 1);
-            this.graphics.beginFill(0x650A5A);
-            this.graphics.drawRoundedRect(this._width/-2, this._height/-2, this._height, this._width, 16);
-            this.graphics.endFill();
-            this.overlay.lineStyle(2, 0xFF00FF, 1);
-            this.overlay.beginFill(0xFFFFFF);
-            this.overlay.drawRoundedRect(this._width/-2, this._height/-2, this._height, this._width, 16);
-            this.overlay.endFill();
-        } else if (this.shape === 'circle') {
-            this.graphics.lineStyle(2, 0xb528a4, 1);
-            this.graphics.beginFill(0x650A5A);
-            this.graphics.drawCircle(0, 0, this._width/2);
-            this.graphics.endFill();
-            this.overlay.lineStyle(1, 0xFF00FF, 1);
-            this.overlay.beginFill(0xFFFFFF);
-            this.overlay.drawCircle(0, 0, this._width/2);
-            this.overlay.endFill();
-        }
-        this.graphics.interactive = true;
-        this.addChild(this.graphics);
-        this.addChild(this.overlay);
+        // if (this.shape === 'square') {
+            // this.graphics.lineStyle(2, 0xFF00FF, 1);
+            // this.graphics.beginFill(0x650A5A);
+            // this.graphics.drawRoundedRect(this._width/-2, this._height/-2, this._height, this._width, 16);
+            // this.graphics.endFill();
+            // this.overlay.lineStyle(2, 0xFF00FF, 1);
+            // this.overlay.beginFill(0xFFFFFF);
+            // this.overlay.drawRoundedRect(this._width/-2, this._height/-2, this._height, this._width, 16);
+            // this.overlay.endFill();
+        // } else if (this.shape === 'circle') {
+            // this.graphics.lineStyle(2, 0xb528a4, 1);
+            // this.graphics.beginFill(0x650A5A);
+            // this.graphics.drawCircle(0, 0, this._width/2);
+            // this.graphics.endFill();
+            // this.overlay.lineStyle(1, 0xFF00FF, 1);
+            // this.overlay.beginFill(0xFFFFFF);
+            // this.overlay.drawCircle(0, 0, this._width/2);
+            // this.overlay.endFill();
+        // }
+        // this.graphics.interactive = true;
+
+        this.bg = new PIXI.Sprite.from('assets/button-round.png');
+        this.bg.width = this._width;
+        this.bg.height = this._height;
+        this.bg.anchor.set(0.5);
+        this.bg.tint = this.color;
+        this.bg.interactive = true;
+        this.mainContainer.addChild(this.bg);
+
+        this.overlay = new PIXI.Sprite.from('assets/button-round.png');
+        this.overlay.width = this._width;
+        this.overlay.height = this._height;
+        this.overlay.anchor.set(0.5);
+        this.overlay.alpha = 0.5;
+        this.overlay.visible = false;
+        this.mainContainer.addChild(this.overlay);
 
         this.text = new PIXI.Text(this.name, {fontFamily: 'Arial', fontSize: 24, fill: '0xFFFFFF'});
         this.text.anchor.set(0.5);
-        this.addChild(this.text);
+        this.mainContainer.addChild(this.text);
 
-        this.graphics.on('pointerdown', this.onDown, this);
-        this.graphics.on('pointermove', this.onMove, this);
-        this.graphics.on('pointerup', this.onUp, this);
+        this.bg.on('pointerdown', this.onDown, this);
+        this.bg.on('pointermove', this.onMove, this);
+        this.bg.on('pointerover', this.onHover, this);
+        this.bg.on('pointerout', this.onOut, this);
+        this.bg.on('pointerup', this.onUp, this);
+        this.bg.on('pointerupoutside', this.onUp, this);
+        // this.bg.on('touchmove', () => console.log('touch'));
+        // this.bg.on('touchend', () => console.log('touchend'));
     }
 
     setText(text) {
         this.text.text = text;
-        this.text.style.fontSize = 24;
+        this.text.style.fontSize = 24 * this._scale;
         while (this.text.width > this._width - 10) {
             this.text.style.fontSize -= 1;
         }
@@ -482,11 +805,46 @@ class Button extends InputElement {
         this.overlay.visible = true;
     }
 
+    onHover(e) {
+        if (!this.editable && e.data.buttons === 1 && !this.isDown) {
+            this.onDown(e);
+        }
+    }
+
+    onOut(e) {
+        if (this.editable) return;
+        if (!this.isDown) return;
+        this.onUp(e);
+    }
+
     onMove(e) {
         if (this.isDown && this.editable) {
             this.drag(e);
             return;
+        } else if (!this.editable && e.data.buttons === 1 && !this.isDown && this.bg.containsPoint(e.data.global)) {
+            this.onDown(e);
+        } else if (this.isDown && !this.bg.containsPoint(e.data.global)) {
+            this.onUp(e);
         }
+    }
+
+    onResize(e) {
+        if (!this.resizing) return;
+        const x = e.data.global.x - this.x;
+        const y = e.data.global.y - this.y - 100;
+        let dist = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+        const distDelta = dist - this._touchStartDist;
+        this._touchStartDist = dist;
+        const scale = 1 + (distDelta / this._touchStartDist);
+        this.bg.width *= scale;
+        this.bg.height *= scale;
+        this.overlay.width *= scale;
+        this.overlay.height *= scale;
+        this.text.style.fontSize *= scale;
+        this._scale += (scale - 1);
+        this._width = this.bg.width;
+        this._height = this.bg.height;
+        InputElement.prototype.onResize.call(this, e);
     }
 
     onUp(event) {
@@ -516,7 +874,7 @@ class TouchPad extends InputElement {
         this.bg.width = this._width;
         this.bg.height = this._height;
         this.bg.interactive = true;
-        this.addChild(this.bg);
+        this.mainContainer.addChild(this.bg);
 
         this.bg.on('pointerdown', this.onDown, this);
         this.bg.on('pointermove', this.onMove, this);
@@ -529,7 +887,22 @@ class TouchPad extends InputElement {
         this.pointer.drawCircle(0, 0, 20);
         this.pointer.endFill();
         this.pointer.visible = false;
-        this.addChild(this.pointer);
+        this.mainContainer.addChild(this.pointer);
+    }
+
+    onResize(e) {
+        if (!this.resizing) return;
+        const x = e.data.global.x - this.x;
+        const y = e.data.global.y - this.y - 100;
+        let dist = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+        const distDelta = dist - this._touchStartDist;
+        this._touchStartDist = dist;
+        const scale = 1 + (distDelta / this._touchStartDist);
+        this.bg.width *= scale;
+        this.bg.height *= scale;
+        this._width = this.mainContainer.width;
+        this._height = this.mainContainer.height;
+        InputElement.prototype.onResize.call(this, e);
     }
 
     onDown(e) {
@@ -550,6 +923,8 @@ class TouchPad extends InputElement {
         let localPos = e.data.getLocalPosition(this);
         this.pointer.x = localPos.x < this._width/-2 ? this._width/-2 : (localPos.x > this._width/2 ? this._width/2 : localPos.x);
         this.pointer.y = localPos.y < this._height/-2 ? this._height/-2 : (localPos.y > this._height/2 ? this._height/2 : localPos.y);
+        this._scaleFactorX = 480 / this._width;
+        this._scaleFactorY = 360 / this._height;
         this._touchX = this.pointer.x * this._scaleFactorX;
         this._touchY = this.pointer.y * this._scaleFactorY;
         this.update();
@@ -559,6 +934,8 @@ class TouchPad extends InputElement {
         this.touchEnd();
         this.isDown = false;
         this.pointer.visible = false;
+        if (this.editable) return;
+        if (this.onchange) this.onchange([this.touchX, this.touchY, this.isDown]);
     }
 
     get touchX() {
@@ -570,7 +947,7 @@ class TouchPad extends InputElement {
     }
 
     update() {
-        if (this.onchange) this.onchange([this.touchX, this.touchY]);
+        if (this.onchange) this.onchange([this.touchX, this.touchY, this.isDown]);
     }
 
 }
@@ -600,6 +977,10 @@ class ImageButton extends InputElement {
         this.button.tint = tint;
     }
 
+    setTexture(texture) {
+        this.button.texture = texture;
+    }
+
     onDown(e) {
         this.touchBegin(e);
         this.isDown = true;
@@ -627,6 +1008,8 @@ class Slider extends InputElement {
     constructor(params) {
         super(params);
         this._value = 1;
+        this.min = params.min || 0;
+        this.max = params.max || 100;
         this._modalType = SliderModal;
         this.create();
     }
@@ -639,7 +1022,7 @@ class Slider extends InputElement {
         this.bg.height = this._height;
         this.bg.interactive = true;
         this.bg.buttonMode = true;
-        this.addChild(this.bg);
+        this.mainContainer.addChild(this.bg);
 
         this.bg.on('pointerdown', this.onDown, this);
         this.bg.on('pointermove', this.onMove, this);
@@ -650,7 +1033,7 @@ class Slider extends InputElement {
         this.fg.anchor.set(0.5);
         this.fg.width = this.bg.width;
         this.fg.height = 40;
-        this.addChild(this.fg);
+        this.mainContainer.addChild(this.fg);
 
         this.update();
     }
@@ -668,8 +1051,9 @@ class Slider extends InputElement {
             this.drag(e);
             return;
         }
+        const scale = this.mainContainer.scale.x;
         const y = e.data.getLocalPosition(this).y;
-        this.value = 100 - ((y + this.bg.height/2) / this.bg.height * 100);
+        this.value = 100 - ((y + (this.bg.height*scale)/2) / (this.bg.height*scale) * 100);
     }
 
     onUp() {
@@ -677,8 +1061,173 @@ class Slider extends InputElement {
         this.isDown = false;
     }
 
+    onResize(e) {
+        if (!this.resizing) return;
+        const x = e.data.global.x - this.x;
+        const y = e.data.global.y - this.y - 100;
+        let dist = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+        const distDelta = dist - this._touchStartDist;
+        this._touchStartDist = dist;
+        const scale = 1 + (distDelta / this._touchStartDist);
+        this.bg.width *= scale;
+        this.bg.height *= scale;
+        this.fg.width *= scale;
+        this.fg.height *= scale;
+        this._width = this.mainContainer.width;
+        this._height = this.mainContainer.height;
+        InputElement.prototype.onResize.call(this, e);
+    }
+
     update() {
         this.fg.y = this.bg.height/2 - (this.value * this.bg.height / 100);
+        if (this.onchange) this.onchange(this.scaledValue);
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    set value(val) {
+        val = Math.round(Math.min(Math.max(val, 0), 100));
+        if (val === this._value) return;
+        this._value = val;
+        this.update();
+    }
+
+    get scaledValue() {
+        // let min = -240;
+        // let max = 240;
+        let scale = (this.max - this.min) / 100;
+        console.log((this.value * scale) + this.min);
+        return (this.value * scale) + this.min;
+    }
+}
+
+class Knob extends InputElement {
+    constructor(params) {
+        super(params);
+        this._value = 1;
+        this._freespin = (params.freespin) ? true : false;
+        this._modalType = KnobModal;
+        this.create();
+    }
+
+    create() {
+        this.slot = new PIXI.Sprite.from('assets/button-round.png');
+        this.slot.anchor.set(0.5);
+        this.slot.tint = 0x121212;
+        this.slot.width = this._width;
+        this.slot.height = this._height;
+        this.mainContainer.addChild(this.slot);
+
+        this.marker = new PIXI.Sprite(PIXI.Texture.WHITE);
+        this.marker.anchor.set(0.5);
+        this.marker.width = 4;
+        this.marker.height = this._height/2;
+        this.marker.y = this._height/-4;
+        this.mainContainer.addChild(this.marker);
+
+        this.bg = new PIXI.Sprite.from('assets/button-round.png');
+        this.bg.anchor.set(0.5);
+        this.bg.tint = 0x404040;
+        this.bg.width = this._width * 0.85;
+        this.bg.height = this._height * 0.85;
+        this.bg.interactive = true;
+        this.bg.buttonMode = true;
+        this.mainContainer.addChild(this.bg);
+
+        this.bg.on('pointerdown', this.onDown, this);
+        this.bg.on('pointermove', this.onMove, this);
+        this.bg.on('pointerup', this.onUp, this);
+        this.bg.on('pointerupoutside', this.onUp, this);
+
+        this.fg = new PIXI.Sprite.from('assets/button-round.png');
+        this.fg.anchor.set(0.5);
+        this.fg.width = 25;
+        this.fg.height = 25;
+        this.mainContainer.addChild(this.fg);
+
+        this.update();
+    }
+
+    onDown(e) {
+        this.touchBegin(e);
+        this.isDown = true;
+        this.onMove(e);
+    }
+
+    onMove(e) {
+        if (!this.isDown) return;
+        this.onMoveEvent(e);
+        if (this.editable) {
+            this.drag(e);
+            return;
+        }
+        const scale = this.mainContainer.scale.x;
+        const pos = e.data.getLocalPosition(this);
+        let rads = Math.atan2(pos.y, pos.x) + 1.5708;
+        let time = new Date().getTime();
+        let angularRotation = (rads-this._lastRad) / (time - this._lastRotate) * this.bg.width;
+        if (angularRotation !== Infinity && angularRotation !== -Infinity) {
+            this._angularRotation = angularRotation * 2;
+        }
+        this._lastRad = rads;
+        this._lastRotate = time;
+        let angle = rads / Math.PI*180;
+        if (angle < 0) angle = 360 + angle;
+        this.value = angle;
+    }
+
+    onUp() {
+        this.touchEnd();
+        this.isDown = false;
+        if (this._freespin && this._angularRotation) {
+            this._spinSpeed = Math.abs(this._angularRotation / 20);
+            this._spinDirection = (this._angularRotation < 0) ? -1 : 1;
+            this.spin();
+        }
+    }
+
+    spin() {
+        // this.rotation += this._spinSpeed;
+        this.value = this.value + (this._spinSpeed / Math.PI * 180 * this._spinDirection);
+        this._angularRotation -= this._spinSpeed * this._spinDirection;
+        // this._spinSpeed *= .5;
+        this._spinSpeed -= this._spinSpeed / 20;
+        if (this._spinSpeed < 0.01) this._angularRotation = 0;
+        if (this._angularRotation * this._spinDirection > 0) {
+            requestAnimationFrame(this.spin.bind(this));
+        }
+    }
+
+    onResize(e) {
+        if (!this.resizing) return;
+        const x = e.data.global.x - this.x;
+        const y = e.data.global.y - this.y - 100;
+        let dist = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+        const distDelta = dist - this._touchStartDist;
+        this._touchStartDist = dist;
+        const scale = 1 + (distDelta / this._touchStartDist);
+        this.bg.width *= scale;
+        this.bg.height *= scale;
+        this.fg.width *= scale;
+        this.fg.height *= scale;
+        this.fg.x *= scale;
+        this.fg.y *= scale;
+        this.slot.width *= scale;
+        this.slot.height *= scale;
+        this.marker.width *= scale;
+        this.marker.height *= scale;
+        this.marker.y *= scale;
+        this._width = this.mainContainer.width;
+        this._height = this.mainContainer.height;
+        InputElement.prototype.onResize.call(this, e);
+    }
+
+    update() {
+        // this.fg.y = this.bg.height/2 - (this.value * this.bg.height / 100);
+        this.fg.x = (this.bg.height/2 - this.fg.width/1.3) * Math.sin(this.value * Math.PI / 180);
+        this.fg.y = -(this.bg.height/2 - this.fg.width/1.3) * Math.cos(this.value * Math.PI / 180);
         if (this.onchange) this.onchange(this.value);
     }
 
@@ -687,7 +1236,9 @@ class Slider extends InputElement {
     }
 
     set value(val) {
-        val = Math.min(Math.max(val, 0), 100);
+        // val = Math.min(Math.max(val, 0), 100);
+        val = Math.round(val);
+        if (this.value === val) return;
         this._value = val;
         this.update();
     }
@@ -715,12 +1266,28 @@ class Stage extends InputElement {
         this.stage.interactive = true;
         // this.stage.anchorX = 0.5;
         // this.stage.anchorY = 0.5;
-        this.addChild(this.stage);
+        this.mainContainer.addChild(this.stage);
 
         this.stage.on('pointerdown', this.onDown, this);
         this.stage.on('pointermove', this.onMove, this);
         this.stage.on('pointerup', this.onUp, this);
         this.stage.on('pointerupoutside', this.onUp, this);
+    }
+
+    onResize(e) {
+        if (!this.resizing) return;
+        const x = e.data.global.x - this.x;
+        const y = e.data.global.y - this.y - 100;
+        let dist = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+        const distDelta = dist - this._touchStartDist;
+        this._touchStartDist = dist;
+        const scale = 1 + (distDelta / this._touchStartDist);
+        this.stage.width *= scale;
+        this.stage.height *= scale;
+        this._scale += (scale - 1);
+        this._width = this.stage.width;
+        this._height = this.stage.height;
+        InputElement.prototype.onResize.call(this, e);
     }
 
     updateTexture(texture) {
@@ -763,6 +1330,8 @@ class Motion extends InputElement {
         this._y = 0;
         this._z = 0;
         this._mag = 0;
+        this.flipX = false;
+        this.flipY = false;
         this.create();
     }
 
@@ -853,11 +1422,13 @@ class Motion extends InputElement {
     }
 
     get motionX() {
-        return Math.round(this._x*-10);
+        const x = (this.flipX) ? -this._x : this._x;
+        return Math.round(x*-10);
     }
 
     get motionY() {
-        return Math.round(this._y*10);
+        const y = (this.flipY) ? -this._y : this._y;
+        return Math.round(y*10);
     }
 
     get motionZ() {
@@ -873,8 +1444,8 @@ class Motion extends InputElement {
         this.textY.text = this.motionY;
         this.textZ.text = this.motionZ;
         this.fg.clear();
-        this.fg.x = this._x * -2;
-        this.fg.y = this._y * 2;
+        this.fg.x = (this.flipX) ? this._x * 2 : this._x * -2;
+        this.fg.y = (this.flipY) ? this._y * -2 : this._y * 2;
         this.fg.beginFill(0x0000000);
         this.fg.drawCircle(0, 0, 2+(Math.abs(this._z)/3));
         this.fg.endFill();
@@ -891,7 +1462,7 @@ let UI = {
             // resolution: Math.floor(devicePixelRatio),
             // resolution: 1,
             // forceCanvas: true,
-            backgroundColor: 0xa8d3da,
+            backgroundColor: 0xE5EFFF,
             antialiasing: true
         });
         document.body.appendChild(this.app.view);
@@ -930,6 +1501,7 @@ let UI = {
         this.widgetContainer.y = 100;
         this.widgetContainer.width = window.innerWidth;
         this.widgetContainer.height = window.innerHeight - 100;
+        this.widgetContainer.sortableChildren = true;
         this.app.stage.addChild(this.widgetContainer);
 
         this.motionMonitor = new Motion({
@@ -953,6 +1525,18 @@ let UI = {
         slider.onchange = val => this.emit({type: 'sensor', inputType: 'slider', name: slider.name, val: Math.round(val)});
         this.widgetContainer.addChild(slider);
 
+        let knob = new Knob({
+            name: 'direction',
+            width: 120,
+            height: 120,
+            x: 80,
+            y: 280,
+            draggable: true
+        });
+        knob.value = 0;
+        knob.onchange = val => this.emit({type: 'sensor', inputType: 'knob', name: knob.name, val: Math.round(val)});
+        this.widgetContainer.addChild(knob);
+
         let touchPad = new TouchPad({
             name: 'finger',
             width: 200,
@@ -967,6 +1551,7 @@ let UI = {
         let button = new Button({
             name: 'go',
             shape: 'circle',
+            color: 0x650A5A,
             type: 'button',
             height: 80,
             width: 80,
@@ -994,23 +1579,27 @@ let UI = {
         menuBg = new PIXI.Sprite(PIXI.Texture.WHITE);
         menuBg.width = window.innerWidth;
         menuBg.height = 70;
-        menuBg.tint = 0xb590ca;
+        menuBg.tint = 0x4D97FF;
         menu.addChild(menuBg);
 
+        fullscreenTexture = new PIXI.Texture.from('assets/fullscreen.png');
+        unfullscreenTexture = new PIXI.Texture.from('assets/unfullscreen.png');
         this.isFullscreen = false;
         let fullscreen  = new ImageButton({
-            x: window.innerWidth - 40,
+            x: window.innerWidth - 30,
             y: menuBg.height/2,
-            width: menuBg.height-30,
-            height: menuBg.height-30,
-            imgSrc: 'assets/fullscreen.png'
+            width: menuBg.height-40,
+            height: menuBg.height-40,
+            imgSrc: fullscreenTexture
         });
         fullscreen.onchange = e => {
             if (this.isFullscreen) {
+                fullscreen.setTexture(fullscreenTexture);
                 window.document.exitFullscreen();
                 this.isFullscreen = false;
             } else {
                 if (document.body.requestFullscreen) {
+                    fullscreen.setTexture(unfullscreenTexture);
                     this.app.renderer.view.requestFullscreen();
                     this.isFullscreen = true;
                 }
@@ -1019,7 +1608,7 @@ let UI = {
         menu.addChild(fullscreen);
 
         let gf = new ImageButton({
-            x: fullscreen.x - 70,
+            x: fullscreen.x - 60,
             y: menuBg.height/2,
             width: menuBg.height-20,
             height: menuBg.height-20,
@@ -1039,15 +1628,17 @@ let UI = {
         menu.addChild(stop);
 
         let editTools = new PIXI.Container();
-        editTools.x = (this.orientation === 'landscape') ? 200 : 40;
-        editTools.y = (this.orientation === 'landscape') ? menuBg.height/2 : window.innerHeight - 40;
+        editTools.x = 100;
+        editTools.y = menuBg.height/2;
+        // editTools.x = (this.orientation === 'landscape') ? 180 : 40;
+        // editTools.y = (this.orientation === 'landscape') ? menuBg.height/2 : window.innerHeight - 40;
         menu.addChild(editTools);
 
         let editButton = new ImageButton({
             x: 0,
             y: 0,
-            width: menuBg.height-20,
-            height: menuBg.height-20,
+            width: menuBg.height-30,
+            height: menuBg.height-30,
             imgSrc: 'assets/edit.png'
         });
         editButton.onchange = e => {
@@ -1056,7 +1647,7 @@ let UI = {
                 okButton.visible = true;
                 addButton.visible = true;
             }, 10);
-            this.app.renderer.backgroundColor = 0x88ABB1;
+            this.app.renderer.backgroundColor = 0xb3bac6;
             this.widgetContainer.children.forEach(child => {
                 child.setEditable(true);
             });
@@ -1078,7 +1669,7 @@ let UI = {
                 okButton.visible = false;
                 addButton.visible = false;
             }, 10);
-            this.app.renderer.backgroundColor = 0xa8d3da;
+            this.app.renderer.backgroundColor = 0xE5EFFF;
             this.widgetContainer.children.forEach(child => {
                 child.setEditable(false);
             });
@@ -1086,7 +1677,7 @@ let UI = {
         editTools.addChild(okButton);
 
         let addButton = new ImageButton({
-            x: 70,
+            x: 60,
             y: 0,
             width: menuBg.height-20,
             height: menuBg.height-20,
@@ -1094,50 +1685,75 @@ let UI = {
         });
         addButton.visible = false;
         addButton.onchange = e => {
-            let modal = new AddModal(this.createInput.bind(this));
+            let modal = new AddModal(type => {
+                if (type === 'stage') {
+                    this.emit({type: 'stage-subscription', state: true});
+                }
+                this.createInput(type);
+            });
         };
         editTools.addChild(addButton);
 
-        this.rtcInput = new PIXI.TextInput({
-            input: {
-                fontSize: '1.6em',
-                padding: '12px',
-                width: '60px',
-                color: '#26272E'
-            },
-            box: {
-                default: {fill: 0xE8E9F3, rounded: 12, stroke: {color: 0xCBCEE0, width: 3}},
-                focused: {fill: 0xE1E3EE, rounded: 12, stroke: {color: 0xABAFC6, width: 3}},
-                disabled: {fill: 0xDBDBDB, rounded: 12}
-            }
-        });
-        this.rtcInput.placeholder = '0000';
-        this.rtcInput.maxLength = 4;
-        this.rtcInput.restrict = '0123456789';
-        this.rtcInput.x = this.rtcInput.width/2 + 10;
-        this.rtcInput.y = this.rtcInput.height/2 + 7.5;
-        this.rtcInput.pivot.x = this.rtcInput.width/2;
-        this.rtcInput.pivot.y = this.rtcInput.height/2;
-        menu.addChild(this.rtcInput);
+        // this.rtcInput = new PIXI.TextInput({
+            // input: {
+                // fontSize: '1.6em',
+                // padding: '12px',
+                // width: '60px',
+                // color: '#26272E'
+            // },
+            // box: {
+                // default: {fill: 0xE8E9F3, rounded: 12, stroke: {color: 0xCBCEE0, width: 3}},
+                // focused: {fill: 0xE1E3EE, rounded: 12, stroke: {color: 0xABAFC6, width: 3}},
+                // disabled: {fill: 0xDBDBDB, rounded: 12}
+            // }
+        // });
+        // this.rtcInput.placeholder = '0000';
+        // this.rtcInput.maxLength = 4;
+        // this.rtcInput.restrict = '0123456789';
+        // this.rtcInput.x = this.rtcInput.width/2 + 10;
+        // this.rtcInput.y = this.rtcInput.height/2 + 7.5;
+        // this.rtcInput.pivot.x = this.rtcInput.width/2;
+        // this.rtcInput.pivot.y = this.rtcInput.height/2;
+        // menu.addChild(this.rtcInput);
 
-        let connectButton = new ImageButton({
-            x: this.rtcInput.width + 40,
+        this.statusReadyTexture = new PIXI.Texture.from('assets/status-ready.png');
+        this.statusSearchingTexture = new PIXI.Texture.from('assets/searching.png');
+        this.statusNotReadyTexture = new PIXI.Texture.from('assets/status-not-ready.png');
+        connectButton = new ImageButton({
+            x: 40,
             y: menuBg.height/2,
-            width: menuBg.height-20,
-            height: menuBg.height-20,
-            imgSrc: 'assets/connect.png'
+            width: menuBg.height-30,
+            height: menuBg.height-30,
+            imgSrc: 'assets/status-not-ready.png'
         });
-        connectButton.setTint(0xf39c12);
-        connectButton.onchange = e => this.emit({type: 'command', name: 'connect', value: this.rtcInput.text});
+        connectButton.onchange = e => {
+            let modal = new ConnectModal(pin => {
+                this.emit({type: 'command', name: 'connect', value: pin});
+                connectButton.setTexture(this.statusSearchingTexture);
+                connectButton.animationTimeout = setTimeout(() => {
+                    connectButton.animating = false;
+                    connectButton.rotation = 0;
+                    connectButton.setTexture(this.statusNotReadyTexture);
+                }, 5000);
+                connectButton.animation = () => {
+                    if (!this.isConnected && connectButton.animating) {
+                        connectButton.rotation += 0.05;
+                        requestAnimationFrame(connectButton.animation);
+                    }
+                };
+                connectButton.animating = true;
+                connectButton.animation();
+            });
+        };
         menu.addChild(connectButton);
 
         menu.resize = () => {
             menuBg.width = window.innerWidth;
-            fullscreen.x = window.innerWidth - 40;
-            gf.x = fullscreen.x - 70;
+            fullscreen.x = window.innerWidth - 30;
+            gf.x = fullscreen.x - 60;
             stop.x = gf.x - 70;
-            editTools.x = (this.orientation === 'landscape') ? 200 : 40;
-            editTools.y = (this.orientation === 'landscape') ? menuBg.height/2 : window.innerHeight - 40;
+            // editTools.x = (this.orientation === 'landscape') ? 200 : 40;
+            // editTools.y = (this.orientation === 'landscape') ? menuBg.height/2 : window.innerHeight - 40;
         };
         return [menu, connectButton];
     },
@@ -1151,6 +1767,7 @@ let UI = {
                 type: 'button',
                 height: 80,
                 width: 80,
+                color: 0x8e44ad,
                 // x: window.innerWidth/2,
                 x: 50,
                 y: 50,
@@ -1203,10 +1820,19 @@ let UI = {
     },
     setConnected(isConnected) {
         if (isConnected) {
-            this.connectButton.setTint(0x2ecc71);
-            this.rtcInput.text = '';
+            this.isConnected = true;
+            this.connectButton.animating = false;
+            if (this.connectButton.animationTimeout) {
+                clearTimeout(this.connectButton.animationTimeout);
+                this.connectButton.animationTimeout = null;
+            }
+            this.connectButton.rotation = 0;
+            this.connectButton.setTexture(this.statusReadyTexture);
+            setTimeout(this.checkStageListeners.bind(this), 2000);
         } else {
-            this.connectButton.setTint(0xf39c12);
+            this.isConnected = false;
+            this.connectButton.rotation = 0;
+            this.connectButton.setTexture(this.statusNotReadyTexture);
         }
     },
     updateStage(data) {
@@ -1243,6 +1869,13 @@ let UI = {
     },
     emit (event) {
         this.listeners.forEach(c => c(event));
+    },
+    checkStageListeners () {
+        let hasStage = false;
+        this.widgetContainer.children.forEach(c => {
+            if (c instanceof Stage) hasStage = true;
+        });
+        this.emit({type: 'stage-subscription', state: hasStage});
     },
     addEventListener (callback) {
         return this.listeners.push(callback);

@@ -23,7 +23,6 @@ window.onload = () => {
     RTCClient.addListener((data) => {
         UI.updateStage(String.fromCharCode.apply(null, data));
     });
-                UI.motionNeedsPermission();
     if (DeviceMotionEvent) {
         if (typeof DeviceMotionEvent.requestPermission === 'function') {
             // Request permission for iOS Safari 13+
