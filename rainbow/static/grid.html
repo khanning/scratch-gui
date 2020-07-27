@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<head>
+  <style>
+    #image-holder {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    img {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello World!</h1>
+
+  <div id='image-holder'></div>
+
+  <script type="text/javascript">
+    let imageHolder = document.querySelector('#image-holder');
+    let imageHolders = {};
+    window.addEventListener('message', msg => {
+      let data = msg.data;
+      if (imageHolders[data.origin]) {
+        imageHolders[data.origin].src = data.data;
+      } else {
+        let img = document.createElement('img');
+        img.src = data.data;
+        imageHolder.appendChild(img);
+        imageHolders[data.origin] = img;
+      }
+    }, false);
+
+  </script>
+
+</body>
+</html>
